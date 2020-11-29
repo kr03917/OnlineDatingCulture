@@ -1,47 +1,132 @@
-extensions [nw]
+extensions [nw rnd]
+
 breed [persons person]
 
-persons-own [qualities preferences similarity-count network-links partner-links max-partners]
+undirected-link-breed [relationship-links relationship-link]
+undirected-link-breed [friend-links friend-link]
+
+
+
+persons-own [qualities
+preferences ;set
+gender ; set
+similarity-count ; set
+network-links ; is this needed?
+partner-links ; is this needed?
+max-partners ; set
+partner-link-preference ] ; set
+
+
+globals [ all-qualities
+  probabilities-qualities
+  hop-preference-probabalities
+  hop-relations
+  inverse-probabilites-qualities
+  partner-probabalities
+  partners ]
 
 to setup
-  create-persons 1000
-  ;set up qualities / preferences according to survery distribution
-  ask persons [set similarity random 100]
-  ; make some initial random links with global variables
-  ; setup max-partners with survery distribution
-  ;
+  clear-all
+  reset-ticks
+  create-persons population
 
+
+  ask persons [set shape "dot"]
+
+  ask persons [set preferences  list set-pref set-pref  ]
+  ask persons [set preferences lput set-pref preferences] ; giving everyone 3 preferences
+  ask persons [set qualities  list set-qualities set-qualities  ]
+  ask persons [set qualities lput set-qualities qualities ] ; giving everyone 3 qualities
+  ask friend-links[set color yellow]
+  ask relationship-links[set color red]
+
+  ask n-of  Initial-connections  persons[ create-friend-links-with n-of 1 other persons ] ; creating initial random friends
+  repeat 100 [ layout-spring persons links 0.2 5 2]
+
+  ask persons [set partner-link-preference set-hop-pref] ; how far away or close in terms of degree does this person want to date
+  ask persons [set similarity-count random 100]
+
+  ask persons [ifelse random 100 < percentage-males [set gender "male" set color blue][ set gender "female" set color pink]]
+  ask persons [setxy random-xcor random-ycor]
+  ask persons [set max-partners set-max-partner]
 end
 
 to go
+ move-and-make-friends
  search ; use puesdocode
  similarity-check ; use puedocode
  date ; use puesdocode
  ditch ; probabilistic model or read the research paper called ditch SJA recommended
+ get-off-social-media
+ tick
+ if ticks >= 200[stop
+ nw:set-context turtles links
+ nw:save-graphml "example.graphml"]
 end
 
-to search
+to search ; search for all potential partners
 end
 
-to similarity-check
-end
-
-
-to date
+to similarity-check ; check how compatible you are and choose partner with highest compability
 end
 
 
-to ditch
+to date ; date the person you are most compatible with if you don't have max-partners
+end
+
+
+to ditch ; probablisticlity break up with the person
+  ;ask persons [if random-float 100 < leave-partner [ ]]
+end
+
+to get-off-social-media ; probabilistic chance to leave social-media/ choose to take a break from dating
+  ask persons[if random-float 100 < leave-social-media-prob [die] ]
+end
+
+to move-and-make-friends
+  ask persons [fd random 3 lt random 3]
+end
+
+to-report set-pref
+   set probabilities-qualities [0.132 0.155 0.17 0.009 0.11 0.07 0.112 0.119 0.039 0.047 0.039]
+   set all-qualities ["Looks" "Humor" "Kindness" "Race" "Education" "Similar-Hobbies"
+"Similar-Worldviews" "Similar Age"  "Social-Standing" "Financial-Stability" "High number ofprevious partners"]
+  report first rnd:weighted-one-of-list (map list all-qualities probabilities-qualities ) last
+end
+
+
+to-report set-qualities
+  set probabilities-qualities [0.132 0.155 0.17 0.009 0.11 0.07 0.112 0.119 0.039 0.047 0.039]
+  set inverse-probabilites-qualities[0.03101157816340214 0.026409860113348924 0.024079578338641664 0.454836479729898 0.03721389379608257 0.05847897596527261 0.036549359978295386 0.034399397626630954 0.10496226455305341 0.08709634718232091 0.10496226455305341]
+  set all-qualities ["Looks" "Humor" "Kindness" "Race" "Education" "Similar-Hobbies"
+    "Similar-Worldviews" "Similar Age"  "Social-Standing" "Financial-Stability" "High number ofprevious partners"]
+  if distribute-qualities = "same as preferences"[report first rnd:weighted-one-of-list (map list all-qualities probabilities-qualities ) last]
+  if distribute-qualities = "inverse of preferences"[report first rnd:weighted-one-of-list (map list all-qualities inverse-probabilites-qualities ) last]
+  if distribute-qualities = "randomly"[report one-of all-qualities]
+end
+
+
+to-report set-hop-pref
+  set hop-preference-probabalities [0.26 0.33 0.29 0.105]
+  set hop-relations [ 1 3 2 4]
+  report first rnd:weighted-one-of-list (map list hop-relations hop-preference-probabalities ) last
+end
+
+
+to-report set-max-partner
+  set partner-probabalities [0.8 0.15 0.05]
+  set partners [ 1 2 3]
+  report first rnd:weighted-one-of-list (map list  partners  partner-probabalities ) last
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
 10
-647
-448
+878
+679
 -1
 -1
-13.0
+20.0
 1
 10
 1
@@ -55,11 +140,130 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
+
+BUTTON
+73
+63
+136
+96
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+72
+103
+135
+136
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+32
+226
+204
+259
+percentage-males
+percentage-males
+1
+100
+45.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+29
+186
+201
+219
+population
+population
+1
+1000
+879.0
+1
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+29
+278
+203
+323
+distribute-qualities
+distribute-qualities
+"same as preferences" "inverse of preferences" "randomly"
+0
+
+SLIDER
+30
+332
+202
+365
+Initial-connections
+Initial-connections
+0
+population
+60.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+958
+75
+1144
+108
+leave-social-media-prob
+leave-social-media-prob
+0
+2
+2.0
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+982
+146
+1154
+179
+leave-partner
+leave-partner
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
