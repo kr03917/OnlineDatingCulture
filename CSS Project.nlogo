@@ -1,10 +1,8 @@
 extensions [nw rnd]
-
 breed [persons person]
 
 undirected-link-breed [relationship-links relationship-link]
 undirected-link-breed [friend-links friend-link]
-
 
 
 persons-own [qualities
@@ -37,8 +35,7 @@ to setup
   ask persons [set preferences lput set-pref preferences] ; giving everyone 3 preferences
   ask persons [set qualities  list set-qualities set-qualities  ]
   ask persons [set qualities lput set-qualities qualities ] ; giving everyone 3 qualities
-  ask friend-links[set color yellow]
-  ask relationship-links[set color red]
+
 
   ask n-of  Initial-connections  persons[ create-friend-links-with n-of 1 other persons ] ; creating initial random friends
   repeat 100 [ layout-spring persons links 0.2 5 2]
@@ -46,18 +43,24 @@ to setup
   ask persons [set partner-link-preference set-hop-pref] ; how far away or close in terms of degree does this person want to date
   ask persons [set similarity-count random 100]
 
+  ask friend-links[set color yellow]
+  ask relationship-links[set color red]
+
+
   ask persons [ifelse random 100 < percentage-males [set gender "male" set color blue][ set gender "female" set color pink]]
   ask persons [setxy random-xcor random-ycor]
   ask persons [set max-partners set-max-partner]
+
 end
 
 to go
- move-and-make-friends
- search ; use puesdocode
- similarity-check ; use puedocode
+ move-and-make-friends  ; this needs to be completed
+ search ; use puesdocode to complete
+ similarity-check ; use puedocode to complete
  date ; use puesdocode
- ditch ; probabilistic model or read the research paper called ditch SJA recommended
- get-off-social-media
+ ditch ; needs to be completed
+ get-off-social-media ; done
+ get-on-social-media ; needss to be completed
  tick
  if ticks >= 200[stop
  nw:set-context turtles links
@@ -76,7 +79,10 @@ end
 
 
 to ditch ; probablisticlity break up with the person
-  ;ask persons [if random-float 100 < leave-partner [ ]]
+  ;ask persons [if random-float 100 < leave-partner [ break link]]
+end
+
+to get-on-social-media
 end
 
 to get-off-social-media ; probabilistic chance to leave social-media/ choose to take a break from dating
@@ -100,6 +106,7 @@ to-report set-qualities
   set inverse-probabilites-qualities[0.03101157816340214 0.026409860113348924 0.024079578338641664 0.454836479729898 0.03721389379608257 0.05847897596527261 0.036549359978295386 0.034399397626630954 0.10496226455305341 0.08709634718232091 0.10496226455305341]
   set all-qualities ["Looks" "Humor" "Kindness" "Race" "Education" "Similar-Hobbies"
     "Similar-Worldviews" "Similar Age"  "Social-Standing" "Financial-Stability" "High number ofprevious partners"]
+
   if distribute-qualities = "same as preferences"[report first rnd:weighted-one-of-list (map list all-qualities probabilities-qualities ) last]
   if distribute-qualities = "inverse of preferences"[report first rnd:weighted-one-of-list (map list all-qualities inverse-probabilites-qualities ) last]
   if distribute-qualities = "randomly"[report one-of all-qualities]
@@ -115,7 +122,7 @@ end
 
 to-report set-max-partner
   set partner-probabalities [0.8 0.15 0.05]
-  set partners [ 1 2 3]
+  set partners [ 1 2 3 ]
   report first rnd:weighted-one-of-list (map list  partners  partner-probabalities ) last
 end
 @#$#@#$#@
@@ -229,7 +236,7 @@ Initial-connections
 Initial-connections
 0
 population
-60.0
+537.0
 1
 1
 NIL
@@ -244,7 +251,7 @@ leave-social-media-prob
 leave-social-media-prob
 0
 2
-2.0
+0.32
 0.01
 1
 NIL
@@ -259,7 +266,7 @@ leave-partner
 leave-partner
 0
 100
-50.0
+3.0
 1
 1
 NIL
