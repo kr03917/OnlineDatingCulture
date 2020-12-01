@@ -9,9 +9,7 @@ persons-own [qualities
 preferences ;set
 gender ; set
 similarity-count ; set
-network-links ; is this needed?
-partner-links ; is this needed?
-max-partners ; set
+potential-partners ; needs to be done
 partner-link-preference ] ; set
 
 
@@ -29,68 +27,89 @@ to setup
   create-persons population
 
 
-  ask persons [set shape "dot"]
-
   ask persons [set preferences  list set-pref set-pref  ]
   ask persons [set preferences lput set-pref preferences] ; giving everyone 3 preferences
   ask persons [set qualities  list set-qualities set-qualities  ]
   ask persons [set qualities lput set-qualities qualities ] ; giving everyone 3 qualities
 
-
-  ask n-of  Initial-connections  persons[ create-friend-links-with n-of 1 other persons ] ; creating initial random friends
+  if Initially-distribute = "Erdos"[nw:generate-random persons friend-links Initial-connections erdos-conenction-prob [ set color yellow ]]
+  if Initially-distribute = "random"[ask n-of  Initial-connections  persons[ create-friend-links-with n-of 1 other persons ]]
+  if Initially-distribute = "Strogatz" [nw:generate-watts-strogatz persons friend-links 50 2 0.1 [ set color yellow ]]
   repeat 100 [ layout-spring persons links 0.2 5 2]
 
   ask persons [set partner-link-preference set-hop-pref] ; how far away or close in terms of degree does this person want to date
   ask persons [set similarity-count random 100]
 
+
+
+  ask persons [set shape "dot"]
   ask friend-links[set color yellow]
   ask relationship-links[set color red]
 
 
   ask persons [ifelse random 100 < percentage-males [set gender "male" set color blue][ set gender "female" set color pink]]
   ask persons [setxy random-xcor random-ycor]
-  ask persons [set max-partners set-max-partner]
 
 end
 
 to go
- move-and-make-friends  ; this needs to be completed
+ move-and-make-friends  ; done
  search ; use puesdocode to complete
  similarity-check ; use puedocode to complete
  date ; use puesdocode
- ditch ; needs to be completed
- get-off-social-media ; done
- get-on-social-media ; needss to be completed
+ ditch ; done
+ get-on-off-social-media ; done
  tick
  if ticks >= 200[stop
  nw:set-context turtles links
  nw:save-graphml "example.graphml"]
 end
 
-to search ; search for all potential partners
+to search ; doesnt work as planned
+  ask persons [
+
+    let my-prefs preferences
+    let my-gender gender
+    let potentials nobody
+    ask  nw:turtles-in-radius partner-link-preference [
+
+      let match intersect my-prefs qualities
+      if length match != 0 [if my-gender != gender [set potentials myself]]]
+
+    if potentials != nobody  [ if length potential-partners = 0 [set  potential-partners potentials] ]]
 end
 
 to similarity-check ; check how compatible you are and choose partner with highest compability
 end
 
 
-to date ; date the person you are most compatible with if you don't have max-partners
+to date ; date the person you are most compatible with if you don't
 end
 
 
-to ditch ; probablisticlity break up with the person
-  ;ask persons [if random-float 100 < leave-partner [ break link]]
+to ditch ; probablisticlity break up with the person/friend
+  ask persons [if random-float 100 < leave-friend-prob [ ask one-of friend-links [die]]]
+  ask persons [if random-float 100 < leave-partner-prob[ ask one-of relationship-links [die]]]
 end
 
-to get-on-social-media
+to get-on-off-social-media
+  ask persons [if random-float 100 < join-social-media-prob[
+    hatch-persons 1 [
+      set qualities  list set-qualities set-qualities
+      set qualities lput set-qualities qualities
+      set preferences list set-pref set-pref
+      set preferences lput set-pref preferences
+      ifelse random 100 < percentage-males [set gender "male" set color blue][ set gender "female" set color pink]
+      set similarity-count random 100
+      set partner-link-preference set-hop-pref]]]
+   ask persons[if random-float 100 < leave-social-media-prob [die] ]
 end
 
-to get-off-social-media ; probabilistic chance to leave social-media/ choose to take a break from dating
-  ask persons[if random-float 100 < leave-social-media-prob [die] ]
-end
 
 to move-and-make-friends
   ask persons [fd random 3 lt random 3]
+  ask persons [create-friend-links-with n-of 1 other persons in-radius 1 ]
+
 end
 
 to-report set-pref
@@ -119,11 +138,24 @@ to-report set-hop-pref
   report first rnd:weighted-one-of-list (map list hop-relations hop-preference-probabalities ) last
 end
 
-
-to-report set-max-partner
-  set partner-probabalities [0.8 0.15 0.05]
-  set partners [ 1 2 3 ]
-  report first rnd:weighted-one-of-list (map list  partners  partner-probabalities ) last
+to-report intersect [ a b ]
+   set a sort a
+   set b sort b
+   let c []
+   while [ not (empty? a or empty? b ) ]
+   [ if-else first a < first b
+     [ set a but-first a
+     ]
+     [ if-else first a > first b
+       [ set b but-first b
+       ]
+       [ set c fput first a c
+         set a but-first a
+         set b but-first b
+       ]
+     ]
+   ]
+   report (patch-set c)
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -236,7 +268,7 @@ Initial-connections
 Initial-connections
 0
 population
-537.0
+67.0
 1
 1
 NIL
@@ -251,22 +283,92 @@ leave-social-media-prob
 leave-social-media-prob
 0
 2
-0.32
+1.51
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-982
+960
+113
+1132
 146
-1154
-179
-leave-partner
-leave-partner
+leave-partner-prob
+leave-partner-prob
 0
 100
-3.0
+40.0
+1
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+946
+275
+1084
+320
+Initially-distribute
+Initially-distribute
+"Strogatz" "Erdos" "Randomly"
+1
+
+SLIDER
+945
+323
+1125
+356
+erdos-conenction-prob
+erdos-conenction-prob
+0
+1
+0.24
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+962
+203
+1134
+236
+make-friend-prob
+make-friend-prob
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+963
+165
+1135
+198
+leave-friend-prob
+leave-friend-prob
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+963
+39
+1135
+72
+join-social-media-prob
+join-social-media-prob
+0
+100
+50.0
 1
 1
 NIL
@@ -618,6 +720,31 @@ NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="leave-partner">
+      <value value="3"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="percentage-males">
+      <value value="45"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="distribute-qualities">
+      <value value="&quot;same as preferences&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Initial-connections">
+      <value value="140"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="879"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="leave-social-media-prob">
+      <value value="0.32"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
