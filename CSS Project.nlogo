@@ -55,7 +55,6 @@ end
 to go
  move-and-make-friends  ; done
  search ; use puesdocode to complete
- similarity-check ; use puedocode to complete
  date ; use puesdocode
  ditch ; done
  get-on-off-social-media ; done
@@ -65,31 +64,28 @@ to go
  nw:save-graphml "example.graphml"]
 end
 
-to search ; doesnt work as planned
-  ask persons [
+to search ; doesnt work as planned try to fix please
+  ;ask persons [
 
-    let my-prefs preferences
-    let my-gender gender
-    let potentials nobody
-    ask  nw:turtles-in-radius partner-link-preference [
+   ; let my-prefs preferences
+   ; let my-gender gender
+   ; let potentials nobody
+   ; ask  nw:turtles-in-radius partner-link-preference [
 
-      let match intersect my-prefs qualities
-      if length match != 0 [if my-gender != gender [set potentials myself]]]
+    ;  let match intersect my-prefs qualities
+     ; if length match != 0 [if my-gender != gender [set potentials myself]]]
 
-    if potentials != nobody  [ if length potential-partners = 0 [set  potential-partners potentials] ]]
-end
-
-to similarity-check ; check how compatible you are and choose partner with highest compability
+    ;if potentials != nobody  [ if length potential-partners = 0 [set  potential-partners potentials] ]]
 end
 
 
-to date ; date the person you are most compatible with if you don't
+to date ; date the person you are most compatible with from your potential partners if you arent dating anyone
 end
 
 
 to ditch ; probablisticlity break up with the person/friend
-  ask persons [if random-float 100 < leave-friend-prob [ ask one-of friend-links [die]]]
-  ask persons [if random-float 100 < leave-partner-prob[ ask one-of relationship-links [die]]]
+  ask persons [if random-float 100 < leave-friend-prob [ if  one-of friend-links != nobody [ask one-of friend-links [die]]]]
+  ask persons [if random-float 100 < leave-partner-prob[ if  one-of relationship-links != nobody [ask one-of relationship-links [die]]]]
 end
 
 to get-on-off-social-media
@@ -108,7 +104,7 @@ end
 
 to move-and-make-friends
   ask persons [fd random 3 lt random 3]
-  ask persons [create-friend-links-with n-of 1 other persons in-radius 1 ]
+  ask persons [if count other persons in-radius 1 != 0 [create-friend-links-with n-of 1 other persons in-radius 1[set color yellow]] ]
 
 end
 
@@ -155,7 +151,7 @@ to-report intersect [ a b ]
        ]
      ]
    ]
-   report (patch-set c)
+   report ( c)
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -338,7 +334,7 @@ make-friend-prob
 make-friend-prob
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -353,7 +349,7 @@ leave-friend-prob
 leave-friend-prob
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -368,7 +364,7 @@ join-social-media-prob
 join-social-media-prob
 0
 100
-50.0
+0.0
 1
 1
 NIL
