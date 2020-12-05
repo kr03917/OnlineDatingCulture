@@ -9,9 +9,8 @@ persons-own [qualities
 preferences ;set
 gender ; set
 similarity-count ; set
-potential-partner ; needs to be done
-partner-link-preference ; set
-current-partner]
+potential-partners ; needs to be done
+partner-link-preference ] ; set
 
 
 globals [ all-qualities
@@ -25,21 +24,22 @@ globals [ all-qualities
 to setup
   clear-all
   reset-ticks
-  if Initially-distribute-friends = "Erdos"[nw:generate-random persons friend-links population erdos-conenction-prob [ set color yellow ]]
-  if Initially-distribute-friends = "Strogatz" [nw:generate-watts-strogatz persons friend-links 50 2 0.1 [ set color yellow ]]
-  if Initially-distribute-relationships = "Erdos"[nw:generate-random persons relationship-links population erdos-conenction-prob [ set color red ]]
-  if Initially-distribute-relationships = "Strogatz" [nw:generate-watts-strogatz persons relationship-links 50 2 0.1 [ set color red ]]
-  repeat 100 [ layout-spring persons links 0.2 5 2]
+  create-persons population
+
 
   ask persons [set preferences  list set-pref set-pref  ]
   ask persons [set preferences lput set-pref preferences] ; giving everyone 3 preferences
   ask persons [set qualities  list set-qualities set-qualities  ]
   ask persons [set qualities lput set-qualities qualities ] ; giving everyone 3 qualities
 
+  if Initially-distribute = "Erdos"[nw:generate-random persons friend-links Initial-connections erdos-conenction-prob [ set color yellow ]]
+  if Initially-distribute = "random"[ask n-of  Initial-connections  persons[ create-friend-links-with n-of 1 other persons ]]
+  if Initially-distribute = "Strogatz" [nw:generate-watts-strogatz persons friend-links 50 2 0.1 [ set color yellow ]]
+  repeat 100 [ layout-spring persons links 0.2 5 2]
+
   ask persons [set partner-link-preference set-hop-pref] ; how far away or close in terms of degree does this person want to date
   ask persons [set similarity-count random 100]
-  ask persons [set potential-partner nobody]
-  ask persons [set current-partner nobody]
+
 
 
   ask persons [set shape "dot"]
@@ -58,7 +58,6 @@ to go
  date ; use puesdocode
  ditch ; done
  get-on-off-social-media ; done
- ask relationship-links [set color red]
  tick
  if ticks >= 200[stop
  nw:set-context turtles links
@@ -66,47 +65,27 @@ to go
 end
 
 to search ; doesnt work as planned try to fix please
-  ask persons [
+  ;ask persons [
 
-   let my-prefs preferences
-   let my-gender gender
-   set potential-partner one-of other (nw:turtles-in-radius partner-link-preference) with [(length (intersect my-prefs qualities) > intersection-required) and gender != my-gender]
-  ]
+   ; let my-prefs preferences
+   ; let my-gender gender
+   ; let potentials nobody
+   ; ask  nw:turtles-in-radius partner-link-preference [
 
+    ;  let match intersect my-prefs qualities
+     ; if length match != 0 [if my-gender != gender [set potentials myself]]]
+
+    ;if potentials != nobody  [ if length potential-partners = 0 [set  potential-partners potentials] ]]
 end
 
 
 to date ; date the person you are most compatible with from your potential partners if you arent dating anyone
-  ask persons [
-    if current-partner = nobody [
-    let my-sim similarity-count
-    let rishta-qabool false
-    let my-part potential-partner
-    if my-part != nobody[
-    ask my-part [if abs(similarity-count - my-sim) < similarity-req[
-
-      set current-partner myself
-      set rishta-qabool true
-    ]
-    ]
-    if rishta-qabool [
-      set current-partner my-part
-
-      create-relationship-link-with current-partner [set color red]]
-    ]
-  ]
-  ]
 end
 
 
 to ditch ; probablisticlity break up with the person/friend
   ask persons [if random-float 100 < leave-friend-prob [ if  one-of friend-links != nobody [ask one-of friend-links [die]]]]
-  ask persons [if random-float 100 < leave-partner-prob[ if  one-of relationship-links != nobody [
-    ask current-partner [
-      set current-partner nobody
-    ]
-    set current-partner nobody
-    ask one-of relationship-links [die ]]]]
+  ask persons [if random-float 100 < leave-partner-prob[ if  one-of relationship-links != nobody [ask one-of relationship-links [die]]]]
 end
 
 to get-on-off-social-media
@@ -116,7 +95,6 @@ to get-on-off-social-media
       set qualities lput set-qualities qualities
       set preferences list set-pref set-pref
       set preferences lput set-pref preferences
-      set potential-partner nobody
       ifelse random 100 < percentage-males [set gender "male" set color blue][ set gender "female" set color pink]
       set similarity-count random 100
       set partner-link-preference set-hop-pref]]]
@@ -126,7 +104,7 @@ end
 
 to move-and-make-friends
   ask persons [fd random 3 lt random 3]
-  ask persons [if count other persons in-radius 1 != 0 and random 100 < make-friend-prob [create-friend-links-with n-of 1 other persons in-radius 1[set color yellow]] ]
+  ask persons [if count other persons in-radius 1 != 0 [create-friend-links-with n-of 1 other persons in-radius 1[set color yellow]] ]
 
 end
 
@@ -179,11 +157,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-786
-587
+878
+679
 -1
 -1
-17.21212121212121
+20.0
 1
 10
 1
@@ -261,7 +239,7 @@ population
 population
 1
 1000
-7.0
+879.0
 1
 1
 NIL
@@ -278,6 +256,21 @@ distribute-qualities
 0
 
 SLIDER
+30
+332
+202
+365
+Initial-connections
+Initial-connections
+0
+population
+67.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
 958
 75
 1144
@@ -286,7 +279,7 @@ leave-social-media-prob
 leave-social-media-prob
 0
 2
-0.02
+1.51
 0.01
 1
 NIL
@@ -301,7 +294,7 @@ leave-partner-prob
 leave-partner-prob
 0
 100
-0.0
+40.0
 1
 1
 NIL
@@ -310,11 +303,11 @@ HORIZONTAL
 CHOOSER
 946
 275
-1140
+1084
 320
-Initially-distribute-relationships
-Initially-distribute-relationships
-"Strogatz" "Erdos"
+Initially-distribute
+Initially-distribute
+"Strogatz" "Erdos" "Randomly"
 1
 
 SLIDER
@@ -341,7 +334,7 @@ make-friend-prob
 make-friend-prob
 0
 100
-0.0
+10.0
 1
 1
 NIL
@@ -356,7 +349,7 @@ leave-friend-prob
 leave-friend-prob
 0
 100
-0.0
+10.0
 1
 1
 NIL
@@ -376,46 +369,6 @@ join-social-media-prob
 1
 NIL
 HORIZONTAL
-
-SLIDER
-26
-381
-198
-414
-intersection-required
-intersection-required
-0
-3
-1.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-46
-442
-218
-475
-similarity-req
-similarity-req
-0
-100
-92.0
-1
-1
-NIL
-HORIZONTAL
-
-CHOOSER
-949
-372
-1110
-417
-initially-distribute-friends
-initially-distribute-friends
-"Strogatz" "Erdos"
-1
 
 @#$#@#$#@
 ## WHAT IS IT?
