@@ -71,8 +71,9 @@ to search ; doesnt work as planned try to fix please
   ask persons [
 
    let my-prefs preferences
+   let my-qualities qualities
    let my-gender gender
-   set potential-partner one-of other (nw:turtles-in-radius partner-link-preference) with [(length (intersect my-prefs qualities) > intersection-required) and gender != my-gender]
+   set potential-partner one-of other (nw:turtles-in-radius partner-link-preference) with [(length (intersect my-prefs qualities) > intersection-required) and gender != my-gender and (length (intersect my-qualities preferences) > intersection-required)]
   ]
 
 end
@@ -255,7 +256,7 @@ population
 population
 1
 1000
-14.0
+77.0
 1
 1
 NIL
@@ -280,7 +281,7 @@ leave-social-media-prob
 leave-social-media-prob
 0
 2
-0.02
+0.51
 0.01
 1
 NIL
