@@ -25,11 +25,13 @@ globals [ all-qualities
 to setup
   clear-all
   reset-ticks
-  if Initially-distribute-friends = "Erdos"[nw:generate-random persons friend-links population erdos-conenction-prob [ set color yellow ]]
-  if Initially-distribute-friends = "Strogatz" [nw:generate-watts-strogatz persons friend-links 50 2 0.1 [ set color yellow ]]
-  if Initially-distribute-relationships = "Erdos"[nw:generate-random persons relationship-links population erdos-conenction-prob [ set color red ]]
-  if Initially-distribute-relationships = "Strogatz" [nw:generate-watts-strogatz persons relationship-links 50 2 0.1 [ set color red ]]
+  if Initially-distribute-friends = "Erdos"[nw:generate-random persons friend-links population erdos-connection-prob-friends [ set color yellow ]]
+  if Initially-distribute-friends = "Strogatz" [nw:generate-watts-strogatz persons friend-links population strogatz-connections-friends strogatz-rewire-prob-friend [ set color yellow ]]
+  if Initially-distribute-relationships = "Erdos"[nw:generate-random persons relationship-links population erdos-conenction-prob-relationship [ set color red ]]
+  if Initially-distribute-relationships = "Strogatz" [nw:generate-watts-strogatz persons relationship-links population strogatz-connection-relationship strogatz-rewire-prob-relationship [ set color red]]
   repeat 100 [ layout-spring persons links 0.2 5 2]
+
+  ask persons [ if count relationship-link-neighbors > 1 [let choosen one-of relationship-link-neighbors ask my-relationship-links  [die ] create-relationship-link-with choosen[set color red] ]]
 
   ask persons [set preferences  list set-pref set-pref  ]
   ask persons [set preferences lput set-pref preferences] ; giving everyone 3 preferences
@@ -39,7 +41,7 @@ to setup
   ask persons [set partner-link-preference set-hop-pref] ; how far away or close in terms of degree does this person want to date
   ask persons [set similarity-count random 100]
   ask persons [set potential-partner nobody]
-  ask persons [set current-partner nobody]
+  ask persons [ifelse one-of relationship-link-neighbors = nobody [set current-partner nobody][set current-partner one-of relationship-link-neighbors]]
 
 
   ask persons [set shape "dot"]
@@ -81,18 +83,10 @@ to date ; date the person you are most compatible with from your potential partn
     if current-partner = nobody [
     let my-sim similarity-count
     let rishta-qabool false
-    let my-part potential-partner
-    if my-part != nobody[
-    ask my-part [if abs(similarity-count - my-sim) < similarity-req[
-
-      set current-partner myself
-      set rishta-qabool true
-    ]
-    ]
-    if rishta-qabool [
-      set current-partner my-part
-
-      create-relationship-link-with current-partner [set color red]]
+    if potential-partner != nobody[
+    ask potential-partner [if abs(similarity-count - my-sim) < similarity-req[set rishta-qabool true]]
+    if rishta-qabool [ set current-partner potential-partner create-relationship-link-with current-partner [set color red]
+    ask current-partner[set current-partner myself]]
     ]
   ]
   ]
@@ -238,50 +232,50 @@ NIL
 1
 
 SLIDER
-32
-226
-204
-259
+19
+182
+191
+215
 percentage-males
 percentage-males
 1
 100
-45.0
+50.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-29
-186
-201
-219
+16
+142
+188
+175
 population
 population
 1
 1000
-7.0
+65.0
 1
 1
 NIL
 HORIZONTAL
 
 CHOOSER
-29
-278
-203
-323
+16
+234
+190
+279
 distribute-qualities
 distribute-qualities
 "same as preferences" "inverse of preferences" "randomly"
 0
 
 SLIDER
-958
-75
-1144
-108
+13
+398
+199
+431
 leave-social-media-prob
 leave-social-media-prob
 0
@@ -293,10 +287,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-960
-113
-1132
-146
+15
+436
+187
+469
 leave-partner-prob
 leave-partner-prob
 0
@@ -308,22 +302,22 @@ NIL
 HORIZONTAL
 
 CHOOSER
-946
-275
-1140
-320
+789
+92
+983
+137
 Initially-distribute-relationships
 Initially-distribute-relationships
 "Strogatz" "Erdos"
-1
+0
 
 SLIDER
-945
-323
-1125
-356
-erdos-conenction-prob
-erdos-conenction-prob
+788
+140
+1036
+173
+erdos-conenction-prob-relationship
+erdos-conenction-prob-relationship
 0
 1
 0.24
@@ -333,40 +327,40 @@ NIL
 HORIZONTAL
 
 SLIDER
-962
-203
-1134
-236
+916
+48
+1088
+81
 make-friend-prob
 make-friend-prob
 0
 100
-0.0
+17.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-963
-165
-1135
-198
+917
+10
+1089
+43
 leave-friend-prob
 leave-friend-prob
 0
 100
-0.0
+17.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-963
-39
-1135
-72
+18
+362
+190
+395
 join-social-media-prob
 join-social-media-prob
 0
@@ -378,10 +372,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-26
-381
-198
-414
+16
+283
+188
+316
 intersection-required
 intersection-required
 0
@@ -393,10 +387,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-46
-442
-218
-475
+16
+320
+188
+353
 similarity-req
 similarity-req
 0
@@ -408,14 +402,183 @@ NIL
 HORIZONTAL
 
 CHOOSER
-949
-372
-1110
-417
+1056
+87
+1217
+132
 initially-distribute-friends
 initially-distribute-friends
 "Strogatz" "Erdos"
+0
+
+SLIDER
+1055
+136
+1278
+169
+erdos-connection-prob-friends
+erdos-connection-prob-friends
+0
 1
+1.0
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1058
+176
+1264
+209
+strogatz-rewire-prob-friend
+strogatz-rewire-prob-friend
+0
+1
+0.32
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+792
+178
+1030
+211
+strogatz-rewire-prob-relationship
+strogatz-rewire-prob-relationship
+0
+1
+0.08
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1059
+216
+1268
+249
+strogatz-connections-friends
+strogatz-connections-friends
+0
+population / 2
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+790
+223
+1018
+256
+strogatz-connection-relationship
+strogatz-connection-relationship
+0
+population / 2
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+846
+263
+963
+308
+Total Relationships
+relation
+17
+1
+11
+
+MONITOR
+1048
+261
+1154
+306
+Total Friendships
+friends
+17
+1
+11
+
+PLOT
+802
+311
+1002
+461
+Total Relationships
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
+PLOT
+1013
+309
+1213
+459
+Total Friendships
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
+PLOT
+803
+469
+1003
+619
+Total Population
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
+PLOT
+1015
+471
+1215
+621
+Total Lonely People
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
