@@ -255,7 +255,7 @@ population
 population
 1
 1000
-65.0
+14.0
 1
 1
 NIL
@@ -335,7 +335,7 @@ make-friend-prob
 make-friend-prob
 0
 100
-17.0
+13.0
 1
 1
 NIL
@@ -350,7 +350,7 @@ leave-friend-prob
 leave-friend-prob
 0
 100
-17.0
+3.0
 1
 1
 NIL
@@ -487,23 +487,23 @@ NIL
 HORIZONTAL
 
 MONITOR
-846
-263
-963
-308
+801
+262
+918
+307
 Total Relationships
-relation
+count relationship-links
 17
 1
 11
 
 MONITOR
-1048
-261
-1154
-306
+926
+262
+1032
+307
 Total Friendships
-friends
+count friend-links
 17
 1
 11
@@ -514,17 +514,17 @@ PLOT
 1002
 461
 Total Relationships
-NIL
-NIL
+ticks
+no. of relationships
 0.0
-10.0
+200.0
 0.0
 10.0
 true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -8053223 true "" "plot count relationship-links"
 
 PLOT
 1013
@@ -532,17 +532,17 @@ PLOT
 1213
 459
 Total Friendships
-NIL
-NIL
+ticks
+no. of friends
 0.0
-10.0
+200.0
 0.0
 10.0
 true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -4079321 true "" "plot count friend-links"
 
 PLOT
 803
@@ -550,17 +550,17 @@ PLOT
 1003
 619
 Total Population
-NIL
-NIL
+ticks
+no. of people
 0.0
-10.0
+200.0
 0.0
 10.0
 true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -14439633 true "" "plot count persons"
 
 PLOT
 1015
@@ -568,17 +568,39 @@ PLOT
 1215
 621
 Total Lonely People
-NIL
-NIL
+ticks
+no. of lonely people
 0.0
-10.0
+200.0
 0.0
 10.0
 true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -11783835 true "" "plot (count turtles with [current-partner = nobody])"
+
+MONITOR
+1040
+262
+1142
+307
+Total Population
+count persons
+17
+1
+11
+
+MONITOR
+1147
+262
+1236
+307
+Lonely People
+count persons with [current-partner = nobody]
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
